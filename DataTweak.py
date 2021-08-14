@@ -1,15 +1,11 @@
-#from matplotlib.colors import same_color
 import numpy as np
-#from numpy.core.defchararray import index
-#from numpy.core.numeric import full
-#from numpy.lib.function_base import diff
 import pandas
 import matplotlib.pyplot as plt
 import os
 import pandas
 from statistics import mean
 from functools import reduce
-#from sklearn.metrics import r2_score
+from sklearn.linear_model import LinearRegression
 
 path = "\Datasets"
 start_dir = os.getcwd() + path
@@ -81,6 +77,7 @@ def addYampa():
     yampa_river_basin = reduce(lambda x, y: x.add(y, fill_value=0), [snotel_daily_swe[site] for site in full_data_sites])
     yampa_river_basin = yampa_river_basin/len(full_data_sites)
     
+    yampa_river_basin = yampa_river_basin[yampa_river_basin["Snow Water Equivalent (in) Start of Day Values"] > .05]
     snotel_daily_swe["Yampa River Basin.csv"] = yampa_river_basin
 
 def preprocessing():
@@ -171,8 +168,6 @@ def graph_daily_ewe_swe():
         plt.title(site[:-4])
         plt.xlabel('Date')
         plt.ylabel('SWE (inches)')
-        
-        curr_snotel.to_csv("CSVs for data/EWE SWE/"+ site[:-4] + '.csv')
 
         plt.scatter(x=snotel_ewe_swe[site].index.values, y = curr_snotel,label= site[:-4])
 
@@ -180,10 +175,16 @@ def graph_daily_ewe_swe():
         axes.set_ylim([0.25,3.5])
 
         #Fitting a line
-        x = np.arange(snotel_ewe_swe[site].index.values.size)
-        fit = np.polyfit(x, snotel_ewe_swe[site]["Snow Water Equivalent (in) Start of Day Values"], 1)
+        year = snotel_ewe_swe[site].index.year
+        month = snotel_ewe_swe[site].index.month
+        day =snotel_ewe_swe[site].index.day
+        x = year + month/12 + day/365
+        y = snotel_ewe_swe[site]["Snow Water Equivalent (in) Start of Day Values"]
+        fit = np.polyfit(x, y, deg = 1)
         fit_fn = np.poly1d(fit)
         plt.plot(snotel_ewe_swe[site].index.values, fit_fn(x), color = 'C3')
+
+
 
         plt.legend()
         figure = plt.gcf()
@@ -195,6 +196,112 @@ def graph_daily_ewe_swe():
 
         ### Saving to CSV ###
         curr_snotel.to_csv("CSVs for data/Daily SWE/" + site[:-4] + ' positive SWE.csv')
+
+#Scatters a multiplot extreme SWE
+def graph_daily_ewe_swe_multiplot():
+    #First 9 sites
+    fig = plt.figure()
+    i=1
+    for site in snotel_sites_withYampa[:9]:
+        plt.subplot(3,3,i)
+        curr_snotel = snotel_ewe_swe[site]
+
+        #GRAPHING
+        plt.title(site[:-4])
+        plt.ylabel('SWE (inches)')
+
+        plt.scatter(x=snotel_ewe_swe[site].index.values, y = curr_snotel,label= site[:-4])
+
+        axes = plt.gca()
+        axes.set_ylim([0.25,3.5])
+
+        #Fitting a line
+        year = snotel_ewe_swe[site].index.year
+        month = snotel_ewe_swe[site].index.month
+        day =snotel_ewe_swe[site].index.day
+        x = year + month/12 + day/365
+        y = snotel_ewe_swe[site]["Snow Water Equivalent (in) Start of Day Values"]
+        fit = np.polyfit(x, y, deg = 1)
+        fit_fn = np.poly1d(fit)
+        plt.plot(snotel_ewe_swe[site].index.values, fit_fn(x), color = 'C3')
+
+        i+=1
+
+    plt.suptitle("EWE Days")
+    figure = plt.gcf()
+    figure.set_size_inches(19, 10)
+    plt.savefig("Graphs/Daily EWE SWE Multiplot/" + "EWE Multiplot(1).png", bbox_inches='tight', dpi=120*2)
+    plt.show()
+
+    #9-18 Sites
+    fig = plt.figure()
+    i=1
+    for site in snotel_sites_withYampa[9:18]:
+        plt.subplot(3,3,i)
+        curr_snotel = snotel_ewe_swe[site]
+
+        #GRAPHING
+        plt.title(site[:-4])
+        plt.ylabel('SWE (inches)')
+
+        plt.scatter(x=snotel_ewe_swe[site].index.values, y = curr_snotel,label= site[:-4])
+
+        axes = plt.gca()
+        axes.set_ylim([0.25,3.5])
+
+        #Fitting a line
+        year = snotel_ewe_swe[site].index.year
+        month = snotel_ewe_swe[site].index.month
+        day =snotel_ewe_swe[site].index.day
+        x = year + month/12 + day/365
+        y = snotel_ewe_swe[site]["Snow Water Equivalent (in) Start of Day Values"]
+        fit = np.polyfit(x, y, deg = 1)
+        fit_fn = np.poly1d(fit)
+        plt.plot(snotel_ewe_swe[site].index.values, fit_fn(x), color = 'C3')
+
+        i+=1
+
+    plt.suptitle("EWE Days")
+    figure = plt.gcf()
+    figure.set_size_inches(19, 10)
+    plt.savefig("Graphs/Daily EWE SWE Multiplot/" + "EWE Multiplot(2).png", bbox_inches='tight', dpi=120*2)
+    plt.show()
+
+
+    #18 onward Sites
+    #First 9 sites
+    fig = plt.figure()
+    i=1
+    for site in snotel_sites_withYampa[18:]:
+        plt.subplot(2,2,i)
+        curr_snotel = snotel_ewe_swe[site]
+
+        #GRAPHING
+        plt.title(site[:-4])
+        plt.ylabel('SWE (inches)')
+
+        plt.scatter(x=snotel_ewe_swe[site].index.values, y = curr_snotel,label= site[:-4])
+
+        axes = plt.gca()
+        axes.set_ylim([0.25,3.5])
+
+        #Fitting a line
+        year = snotel_ewe_swe[site].index.year
+        month = snotel_ewe_swe[site].index.month
+        day =snotel_ewe_swe[site].index.day
+        x = year + month/12 + day/365
+        y = snotel_ewe_swe[site]["Snow Water Equivalent (in) Start of Day Values"]
+        fit = np.polyfit(x, y, deg = 1)
+        fit_fn = np.poly1d(fit)
+        plt.plot(snotel_ewe_swe[site].index.values, fit_fn(x), color = 'C3')
+
+        i+=1
+
+    plt.suptitle("EWE Days")
+    figure = plt.gcf()
+    figure.set_size_inches(19, 10)
+    plt.savefig("Graphs/Daily EWE SWE Multiplot/" + "EWE Multiplot(3).png", bbox_inches='tight', dpi=120*2)
+    plt.show()
 
 #Graphs the SWE Breakdown of the snotel sites + YAMPA river basin
 def graph_swe_breakdown_percentage():
@@ -394,6 +501,24 @@ def graph_max_annual_swe():
 # Graphs the EWE events of each snotel site
 def graph_ewe_days_all():
 
+    #GRAPHING ALL
+    fig = plt.figure()
+    
+    for site in snotel_sites_withYampa:
+        df = snotel_ewe_swe[site].astype(str)
+        df['Snow Water Equivalent (in) Start of Day Values'] = df['Snow Water Equivalent (in) Start of Day Values'].replace([row[0] for _,row in df.iterrows()],site[:-4])
+        df = df['10/1/1989' : '09/30/2020']
+        plt.scatter(df.index.values, df["Snow Water Equivalent (in) Start of Day Values"], label= site[:-4], marker='x')
+
+    plt.xlabel("Water Years")
+    plt.ylabel("Snotel Sites")
+    plt.legend(bbox_to_anchor=(1.05, 1))
+    figure = plt.gcf()
+    figure.set_size_inches(19, 10)
+    #Uncomment to save plot
+    plt.savefig("Graphs/EWE Days All/" + "99 Percentile EWE Days.png", bbox_inches='tight', dpi=120*2)
+    plt.show()
+
     #GRAPHING PART 1
     fig = plt.figure()
     
@@ -452,10 +577,13 @@ def graph_ewe_days_all():
 def store_r_square():
     global r_squared
 
-    for index in range(len(snotel_sites)):
-        site = snotel_sites[index]
-        x = np.arange(snotel_ewe_swe[site].index.values.size)
-        fit = np.polyfit(x, snotel_ewe_swe[site]["Snow Water Equivalent (in) Start of Day Values"], 1)
+    for index in range(len(snotel_sites_withYampa)):
+        site = snotel_sites_withYampa[index]
+        year = snotel_ewe_swe[site].index.year
+        month = snotel_ewe_swe[site].index.month
+        day =snotel_ewe_swe[site].index.day
+        x = year + month/12 + day/365
+        fit = np.polyfit(x, snotel_ewe_swe[site]["Snow Water Equivalent (in) Start of Day Values"], deg = 1)
         fit_fn = np.poly1d(fit)
 
         #line_fit[site] = fit_fn
@@ -474,15 +602,16 @@ def main():
     find_missing_datasets()
     addYampa()
     preprocessing()
-    graph_daily_swe()
-    graph_daily_ewe_swe()
-    graph_max_annual_swe()
+    #graph_daily_swe()
+    #graph_daily_ewe_swe()
+    graph_daily_ewe_swe_multiplot()
+    #graph_max_annual_swe()
 
-    graph_swe_breakdown_percentage()
-    graph_ewe_days_all()
-    graph_breakdown_percentage()
+    #graph_swe_breakdown_percentage()
+    #graph_ewe_days_all()
+    #graph_breakdown_percentage()
 
-    store_r_square()
+    #store_r_square()
 
 if __name__ == "__main__":
     main()
